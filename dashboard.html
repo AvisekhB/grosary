@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avisekh Grocery — Owner Dashboard</title>
+<style>
+  :root{
+    --cream:#FFF8EF;
+    --cream-dark:#FBEEDD;
+    --brown:#3E5C2A;
+    --brown-dark:#2A3E1D;
+    --terracotta:#D97B4F;
+    --terracotta-dark:#B85E36;
+    --green:#4C8B5C;
+    --red:#B00020;
+    --line:#EAD9C4;
+    --white:#FFFFFF;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--cream);
+    color:var(--brown-dark);
+  }
+  header.top{
+    background:var(--brown);
+    color:var(--cream);
+    padding:16px 24px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:4px solid var(--terracotta);
+  }
+  header.top h1{margin:0;font-size:1.3rem;}
+  .btn{
+    border:none;border-radius:10px;padding:9px 14px;font-size:0.9rem;font-weight:700;
+    cursor:pointer;
+  }
+  .btn.primary{background:var(--terracotta);color:white;}
+  .btn.outline{background:white;border:1.5px solid var(--terracotta);color:var(--terracotta-dark);}
+  .btn.danger{background:var(--red);color:white;}
+  .btn.small{padding:5px 10px;font-size:0.8rem;}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;}
+  main{max-width:1200px;margin:0 auto;padding:20px 24px;}
+  #loginBox{max-width:380px;margin:80px auto;background:white;border:1px solid var(--line);
+    border-radius:14px;padding:28px;}
+  #loginBox h2{margin-top:0;color:var(--brown);}
+  form label{display:block;font-weight:600;margin:12px 0 4px;font-size:0.9rem;}
+  form input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);font-size:0.95rem;}
+  .disclaimer{
+    background:#FBEAD9;border:1px solid var(--terracotta);border-radius:10px;
+    padding:10px 14px;font-size:0.85rem;color:var(--brown-dark);margin-bottom:16px;
+  }
+  nav.dashtabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:2px solid var(--line);}
+  nav.dashtabs button{
+    padding:10px 18px;border:none;background:transparent;font-size:0.95rem;font-weight:700;
+    color:var(--brown);cursor:pointer;border-bottom:3px solid transparent;
+  }
+  nav.dashtabs button.active{color:var(--terracotta-dark);border-bottom-color:var(--terracotta);}
+  .toggle-row{
+    display:flex;align-items:center;gap:14px;background:white;border:1px solid var(--line);
+    border-radius:12px;padding:14px 18px;margin-bottom:20px;
+  }
+  .switch{position:relative;display:inline-block;width:52px;height:28px;}
+  .switch input{opacity:0;width:0;height:0;}
+  .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;
+    border-radius:28px;transition:.2s;}
+  .slider:before{position:absolute;content:"";height:20px;width:20px;left:4px;bottom:4px;
+    background:white;border-radius:50%;transition:.2s;}
+  input:checked + .slider{background:var(--green);}
+  input:checked + .slider:before{transform:translateX(24px);}
+  .toggle-label{font-weight:700;}
+  .toggle-status{font-size:0.85rem;color:#6a7a5d;}
+  .board{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .status-col{background:white;border:1px solid var(--line);border-radius:12px;padding:14px;}
+  .status-title{
+    font-weight:800;background:var(--brown);color:white;padding:6px 12px;border-radius:20px;
+    display:inline-block;font-size:0.85rem;margin-bottom:12px;
+  }
+  .order-card{
+    background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+    margin-bottom:10px;font-size:0.85rem;
+  }
+  .order-card .items{margin:6px 0;padding-left:16px;font-size:0.82rem;}
+  .order-card .actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  a.wa-link{color:var(--green);font-weight:700;text-decoration:none;}
+  .empty-msg{text-align:center;color:#8a6a4d;padding:20px 10px;font-size:0.85rem;}
+  table{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;}
+  table th, table td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);font-size:0.9rem;}
+  table th{background:var(--cream-dark);color:var(--brown);cursor:pointer;user-select:none;}
+  table tbody tr:hover{background:var(--cream-dark);}
+  .panel{background:white;border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:20px;}
+  .panel h3{margin-top:0;color:var(--brown);}
+  .prod-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;align-items:end;}
+  .prod-form label{font-size:0.8rem;font-weight:600;margin-bottom:4px;display:block;}
+  .prod-form input, .prod-form select{width:100%;padding:8px;border-radius:8px;border:1px solid var(--line);}
+  .tag{display:inline-block;font-size:0.7rem;padding:2px 8px;border-radius:20px;font-weight:600;}
+  .tag.active{background:#E3F1E6;color:var(--green);}
+  .tag.inactive{background:#FBEAD9;color:var(--terracotta-dark);}
+  @media (max-width:900px){ .board{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>🛒 Avisekh Grocery — Owner Dashboard</h1>
+  <button class="btn outline" id="logoutBtn" style="display:none;" onclick="ownerLogout()">Log Out</button>
+</header>
+
+<main>
+  <div id="loginBox">
+    <h2>Owner Login</h2>
+    <div class="disclaimer">This area is for the shop owner only.</div>
+    <form onsubmit="return ownerLogin(event)">
+      <label>Email</label>
+      <input type="email" id="ownerEmail" required>
+      <label>Password</label>
+      <input type="password" id="ownerPassword" required>
+      <div id="loginError" style="color:#B00020;font-size:0.85rem;margin-top:8px;"></div>
+      <button type="submit" class="btn primary" style="width:100%;margin-top:14px;">Log In</button>
+    </form>
+  </div>
+
+  <div id="dashboardBox" style="display:none;">
+    <div class="toggle-row">
+      <label class="switch">
+        <input type="checkbox" id="shopOpenToggle" onchange="toggleShopOpen()">
+        <span class="slider"></span>
+      </label>
+      <div>
+        <div class="toggle-label" id="toggleLabel">Shop Open</div>
+        <div class="toggle-status">Turn this off to stop customers from placing new orders. They'll see a "Sorry, we're closed" message.</div>
+      </div>
+    </div>
+
+    <nav class="dashtabs">
+      <button id="tabOrdersBtn" class="active" onclick="showTab('orders')">📦 Orders</button>
+      <button id="tabInventoryBtn" onclick="showTab('inventory')">🗂️ Inventory</button>
+      <button id="tabCustomersBtn" onclick="showTab('customers')">👥 Customers</button>
+    </nav>
+
+    <!-- ORDERS TAB -->
+    <div id="tab-orders" class="tabpane">
+      <div id="ordersBoard" class="board"></div>
+    </div>
+
+    <!-- INVENTORY TAB -->
+    <div id="tab-inventory" class="tabpane" style="display:none;">
+      <div class="panel">
+        <h3>Add a New Product</h3>
+        <form class="prod-form" onsubmit="return addProduct(event)">
+          <div><label>Name</label><input type="text" id="newName" required></div>
+          <div><label>Category</label><input type="text" id="newCategory" required></div>
+          <div>
+            <label>Pricing Type</label>
+            <select id="newPricingType" onchange="toggleNewProductFields()">
+              <option value="Fixed">Fixed (per pack)</option>
+              <option value="By-Weight">By-Weight (per kg/L)</option>
+            </select>
+          </div>
+          <div><label>Price (₹)</label><input type="number" step="0.01" id="newPrice" required></div>
+          <div id="newPackLabelWrap"><label>Pack Label (e.g. "1 kg pack")</label><input type="text" id="newPackLabel"></div>
+          <div id="newMeasureUnitWrap" style="display:none;">
+            <label>Measure Unit</label>
+            <select id="newMeasureUnit"><option value="kg">kg</option><option value="L">L</option></select>
+          </div>
+          <div><button type="submit" class="btn primary">Add Product</button></div>
+        </form>
+      </div>
+      <div class="panel">
+        <h3>All Products</h3>
+        <table>
+          <thead><tr><th>Name</th><th>Category</th><th>Type</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="productsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CUSTOMERS TAB -->
+    <div id="tab-customers" class="tabpane" style="display:none;">
+      <div class="panel">
+        <h3>Customers</h3>
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortCustomers('name')">Name</th>
+              <th onclick="sortCustomers('phone')">Phone</th>
+              <th onclick="sortCustomers('total_orders')">Orders</th>
+              <th onclick="sortCustomers('total_spent')">Total Spent ↕</th>
+              <th onclick="sortCustomers('last_order_date')">Last Order</th>
+            </tr>
+          </thead>
+          <tbody id="customersTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ================= SUPABASE SETUP ================= */
+const SUPABASE_URL = "PASTE_HERE";
+const SUPABASE_ANON_KEY = "PASTE_HERE";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const STATUS_FLOW = ["Order Placed","Packing Done","Picked Up"];
+let realtimeChannel = null;
+
+/* ================= OWNER AUTH ================= */
+async function ownerLogin(e){
+  e.preventDefault();
+  const email = document.getElementById('ownerEmail').value.trim();
+  const password = document.getElementById('ownerPassword').value;
+  const errBox = document.getElementById('loginError');
+  errBox.textContent = "";
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){
+    errBox.textContent = "Login failed: " + error.message;
+    return false;
+  }
+  await showDashboardScreen();
+  return false;
+}
+async function ownerLogout(){
+  await sb.auth.signOut();
+  if(realtimeChannel){ sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+  document.getElementById('ownerPassword').value = "";
+  showDashboardScreen();
+}
+async function showDashboardScreen(){
+  const { data: { session } } = await sb.auth.getSession();
+  const loginBox = document.getElementById('loginBox');
+  const dashBox = document.getElementById('dashboardBox');
+  const logoutBtn = document.getElementById('logoutBtn');
+  if(session){
+    loginBox.style.display = 'none';
+    dashBox.style.display = 'block';
+    logoutBtn.style.display = 'inline-block';
+    await loadShopSettings();
+    await renderOrders();
+    await renderInventory();
+    await renderCustomers();
+    subscribeRealtime();
+  } else {
+    loginBox.style.display = 'block';
+    dashBox.style.display = 'none';
+    logoutBtn.style.display = 'none';
+  }
+}
+
+/* ================= SHOP OPEN/CLOSED TOGGLE ================= */
+async function loadShopSettings(){
+  const { data, error } = await sb.from('shop_settings').select('*').eq('id',1).single();
+  if(error){ console.error(error); return; }
+  document.getElementById('shopOpenToggle').checked = data.is_open;
+  document.getElementById('toggleLabel').textContent = data.is_open ? "Shop Open" : "Shop Closed";
+}
+async function toggleShopOpen(){
+  const checked = document.getElementById('shopOpenToggle').checked;
+  const { error } = await sb.from('shop_settings').update({ is_open: checked, updated_at: new Date().toISOString() }).eq('id',1);
+  if(error){
+    alert("Couldn't update shop status — check your connection and try again.");
+    console.error(error);
+    document.getElementById('shopOpenToggle').checked = !checked; // revert
+    return;
+  }
+  document.getElementById('toggleLabel').textContent = checked ? "Shop Open" : "Shop Closed";
+}
+
+/* ================= TABS ================= */
+function showTab(name){
+  document.querySelectorAll('.tabpane').forEach(t=>t.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+  document.getElementById('tabOrdersBtn').classList.toggle('active', name==='orders');
+  document.getElementById('tabInventoryBtn').classList.toggle('active', name==='inventory');
+  document.getElementById('tabCustomersBtn').classList.toggle('active', name==='customers');
+}
+
+/* ================= ORDERS (live board) ================= */
+async function loadOrdersWithItems(){
+  const { data: orders, error } = await sb.from('orders').select('*').order('created_at', {ascending:false});
+  if(error){ console.error(error); return null; }
+  const { data: items, error: itemsErr } = await sb.from('order_items').select('*');
+  if(itemsErr){ console.error(itemsErr); return null; }
+  const itemsByOrder = {};
+  items.forEach(it=>{
+    if(!itemsByOrder[it.order_id]) itemsByOrder[it.order_id] = [];
+    itemsByOrder[it.order_id].push(it);
+  });
+  orders.forEach(o=> o.items = itemsByOrder[o.id] || []);
+  return orders;
+}
+
+async function updateOrderStatus(orderId, newStatus){
+  const { error } = await sb.from('orders').update({status:newStatus}).eq('id', orderId);
+  if(error){ alert("Couldn't update status — check your internet connection and try again."); console.error(error); return; }
+  renderOrders();
+}
+
+async function renderOrders(){
+  const board = document.getElementById('ordersBoard');
+  board.innerHTML = `<div class="empty-msg">Loading orders…</div>`;
+  const orders = await loadOrdersWithItems();
+  if(orders === null){
+    board.innerHTML = `<div class="empty-msg">Couldn't load orders. Check your connection.</div>`;
+    return;
+  }
+  board.innerHTML = "";
+  STATUS_FLOW.forEach(status=>{
+    const group = orders.filter(o=>o.status===status);
+    const col = document.createElement('div');
+    col.className = 'status-col';
+    const emoji = {"Order Placed":"🆕","Packing Done":"📦","Picked Up":"✅"}[status];
+    col.innerHTML = `<div class="status-title">${emoji} ${status} (${group.length})</div>`;
+    if(group.length === 0){
+      col.innerHTML += `<div class="empty-msg">No orders here.</div>`;
+    }
+    group.forEach(o=>{
+      const card = document.createElement('div');
+      card.className = 'order-card';
+      const itemsHtml = o.items.map(it=>{
+        const sub = it.pricing_type === 'Fixed' ? `× ${it.quantity}` : `${it.quantity} ${it.measure_unit}`;
+        return `<li>${it.product_name} ${sub} — ₹${it.line_total}</li>`;
+      }).join("");
+      const nextIdx = STATUS_FLOW.indexOf(status)+1;
+      const nextStatus = STATUS_FLOW[nextIdx];
+      card.innerHTML = `
+        <b>${o.order_number}</b> — ${o.customer_name}
+        (<a class="wa-link" href="https://wa.me/91${o.customer_phone}" target="_blank">${o.customer_phone}</a>)<br>
+        <span style="font-size:0.8rem;color:#6a7a5d;">Pickup: ${o.pickup_slot}</span>
+        <ul class="items">${itemsHtml}</ul>
+        Total: ₹${o.total} · Payment: ${o.payment_method}
+        ${o.note ? "<br>Note: "+o.note : ""}
+        <div class="actions">
+          ${nextStatus ? `<button class="btn primary small" onclick="updateOrderStatus('${o.id}','${nextStatus}')">Move to ${nextStatus}</button>` : ""}
+        </div>
+      `;
+      col.appendChild(card);
+    });
+    board.appendChild(col);
+  });
+}
+
+function subscribeRealtime(){
+  if(realtimeChannel) return;
+  realtimeChannel = sb.channel('orders-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, ()=>{ renderOrders(); renderCustomers(); })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, ()=>{ renderOrders(); })
+    .subscribe();
+}
+
+/* ================= INVENTORY ================= */
+function toggleNewProductFields(){
+  const type = document.getElementById('newPricingType').value;
+  document.getElementById('newPackLabelWrap').style.display = type === 'Fixed' ? 'block' : 'none';
+  document.getElementById('newMeasureUnitWrap').style.display = type === 'By-Weight' ? 'block' : 'none';
+}
+
+async function addProduct(e){
+  e.preventDefault();
+  const name = document.getElementById('newName').value.trim();
+  const category = document.getElementById('newCategory').value.trim();
+  const pricingType = document.getElementById('newPricingType').value;
+  const price = parseFloat(document.getElementById('newPrice').value);
+  const packLabel = document.getElementById('newPackLabel').value.trim();
+  const measureUnit = document.getElementById('newMeasureUnit').value;
+
+  const row = {
+    name, category, pricing_type: pricingType, price,
+    pack_label: pricingType === 'Fixed' ? (packLabel || null) : null,
+    measure_unit: pricingType === 'By-Weight' ? measureUnit : null,
+    active: true
+  };
+  const { error } = await sb.from('products').insert([row]);
+  if(error){ alert("Couldn't add product: " + error.message); console.error(error); return false; }
+  e.target.reset();
+  toggleNewProductFields();
+  renderInventory();
+  return false;
+}
+
+async function toggleProductActive(id, active){
+  const { error } = await sb.from('products').update({active}).eq('id', id);
+  if(error){ alert("Couldn't update product."); console.error(error); return; }
+  renderInventory();
+}
+async function deleteProduct(id, name){
+  if(!confirm(`Delete "${name}" permanently? This cannot be undone.`)) return;
+  const { error } = await sb.from('products').delete().eq('id', id);
+  if(error){ alert("Couldn't delete product."); console.error(error); return; }
+  renderInventory();
+}
+async function editProductPrice(id, currentPrice){
+  const newPrice = prompt("New price (₹):", currentPrice);
+  if(newPrice === null) return;
+  const parsed = parseFloat(newPrice);
+  if(isNaN(parsed)){ alert("Enter a valid number."); return; }
+  const { error } = await sb.from('products').update({price: parsed}).eq('id', id);
+  if(error){ alert("Couldn't update price."); console.error(error); return; }
+  renderInventory();
+}
+
+async function renderInventory(){
+  const tbody = document.getElementById('productsTableBody');
+  tbody.innerHTML = `<tr><td colspan="6" class="empty-msg">Loading…</td></tr>`;
+  const { data, error } = await sb.from('products').select('*').order('category').order('name');
+  if(error){ tbody.innerHTML = `<tr><td colspan="6" class="empty-msg">Couldn't load products.</td></tr>`; console.error(error); return; }
+  if(data.length === 0){ tbody.innerHTML = `<tr><td colspan="6" class="empty-msg">No products yet.</td></tr>`; return; }
+  tbody.innerHTML = "";
+  data.forEach(p=>{
+    const priceLabel = p.pricing_type === 'Fixed'
+      ? `₹${p.price} / ${p.pack_label || 'pack'}`
+      : `₹${p.price} / ${p.measure_unit}`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.name}</td>
+      <td>${p.category}</td>
+      <td>${p.pricing_type}</td>
+      <td>${priceLabel}</td>
+      <td><span class="tag ${p.active ? 'active' : 'inactive'}">${p.active ? 'In Stock' : 'Out of Stock'}</span></td>
+      <td>
+        <button class="btn outline small" onclick="editProductPrice('${p.id}', ${p.price})">Edit Price</button>
+        <button class="btn outline small" onclick="toggleProductActive('${p.id}', ${!p.active})">${p.active ? 'Mark Out of Stock' : 'Mark In Stock'}</button>
+        <button class="btn danger small" onclick="deleteProduct('${p.id}','${p.name.replace(/'/g,"\\'")}')">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ================= CUSTOMERS ================= */
+let customersCache = [];
+let customerSort = { key: 'total_spent', dir: 'desc' };
+
+async function renderCustomers(){
+  const tbody = document.getElementById('customersTableBody');
+  tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Loading…</td></tr>`;
+  const { data, error } = await sb.from('customers').select('*');
+  if(error){ tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Couldn't load customers.</td></tr>`; console.error(error); return; }
+  customersCache = data;
+  renderCustomersTable();
+}
+function sortCustomers(key){
+  if(customerSort.key === key){
+    customerSort.dir = customerSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    customerSort = { key, dir: 'desc' };
+  }
+  renderCustomersTable();
+}
+function renderCustomersTable(){
+  const tbody = document.getElementById('customersTableBody');
+  if(customersCache.length === 0){ tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">No customers yet.</td></tr>`; return; }
+  const sorted = [...customersCache].sort((a,b)=>{
+    let va = a[customerSort.key], vb = b[customerSort.key];
+    if(typeof va === 'string') va = va.toLowerCase();
+    if(typeof vb === 'string') vb = vb.toLowerCase();
+    if(va < vb) return customerSort.dir === 'asc' ? -1 : 1;
+    if(va > vb) return customerSort.dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+  tbody.innerHTML = "";
+  sorted.forEach(c=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${c.name || '—'}</td>
+      <td>${c.phone}</td>
+      <td>${c.total_orders}</td>
+      <td>₹${c.total_spent}</td>
+      <td>${new Date(c.last_order_date).toLocaleDateString()}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ================= INIT ================= */
+toggleNewProductFields();
+showDashboardScreen();
+</script>
+</body>
+</html>
